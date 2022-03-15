@@ -224,6 +224,14 @@ export default function(nameFn = defaultName)
                         if(attr.typeId !== '23')
                             return memo;
 
+                        // Exclude columns that are primary key
+                        if(table.primaryKeyConstraint && table.primaryKeyConstraint.keyAttributeNums.includes(attr.num))
+                            return memo;
+
+                        // Exclude columns that are foreign keys
+                        if(table.constraints.some(constraint => constraint.type === 'f' && constraint.keyAttributeNums.includes(attr.num)))
+                            return memo;
+
                         const fieldName = nameFn(inflection.column(attr));
 
                         if (memo[fieldName])
