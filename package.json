@@ -1,6 +1,6 @@
 {
   "name": "postgraphile-plugin-numeral",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Integers formatted with Numeral.js for PostGraphile",
   "main": "index.js",
   "scripts": {
