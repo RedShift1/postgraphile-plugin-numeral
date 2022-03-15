@@ -30,7 +30,7 @@ const getComputedColumnDetails = ( build, table, proc ) =>
         return null;
     }
 
-    const pseudoColumnName = proc.name.substr(table.name.length + 1);
+    const pseudoColumnName = proc.name.slice(table.name.length + 1);
     return { argTypes, pseudoColumnName };
 };
 
