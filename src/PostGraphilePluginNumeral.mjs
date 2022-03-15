@@ -45,26 +45,6 @@ export default function(nameFn = defaultName)
     {
         const { pgSimpleCollections } = builder;
 
-        builder.hook(
-            'build',
-            (_, build) =>
-            {
-                const { addType, graphql: { GraphQLScalarType } } = build;
-
-                const GraphQLNumeral = new GraphQLScalarType(
-                    {
-                        name: 'Numeral',
-                        description: 'The `Numeral` scalar type represents a number formatted with Numeral.js.'
-                    }
-                );
-
-                addType(GraphQLNumeral);
-
-                return _;
-            }
-        );
-
-
         // Computed fields that return int datatype
         builder.hook(
             'GraphQLObjectType:fields',
@@ -95,6 +75,7 @@ export default function(nameFn = defaultName)
 
                 const {
                     extend,
+                    graphql: { GraphQLString },
                     pgIntrospectionResultsByKind: introspectionResultsByKind,
                     inflection,
                     pgOmit: omit,
@@ -150,7 +131,11 @@ export default function(nameFn = defaultName)
                                     field =
                                     {
                                         ...field,
-                                        type: build.getTypeByName('Numeral'),
+                                        args:
+                                        {
+                                            format: { type: GraphQLString, description: 'See http://numeraljs.com/#format' }
+                                        },
+                                        type: GraphQLString,
                                         resolve(data, args, ctx, info)
                                         {
                                             return numeral(parentResolver(data, args, ctx, info)).format(args.format);
@@ -195,9 +180,8 @@ export default function(nameFn = defaultName)
             ['PgComputedColumns']
         );
 
-
-        builder.hook(
         // Normal fields that return int datatype
+        return builder.hook(
             "GraphQLObjectType:fields",
             (fields, build, context) =>
             {
@@ -205,7 +189,7 @@ export default function(nameFn = defaultName)
                     extend,
                     pgSql: sql,
                     pg2gqlForType,
-                    graphql: { GraphQLNonNull },
+                    graphql: { GraphQLNonNull, GraphQLString },
                     pgColumnFilter,
                     inflection,
                     pgOmit: omit,
@@ -258,7 +242,7 @@ export default function(nameFn = defaultName)
                                         const { type, typeModifier } = attr;
                                         const sqlColumn = sql.identifier(attr.name);
                                         const { addDataGenerator } = fieldContext;
-                                        const ReturnType = build.getTypeByName('Numeral');
+                                        const ReturnType = GraphQLString;
 
                                         addDataGenerator(
                                             parsedResolveInfoFragment =>
@@ -285,6 +269,10 @@ export default function(nameFn = defaultName)
                                         const convertFromPg = pg2gqlForType(type);
 
                                         return {
+                                            args:
+                                            {
+                                                format: { type: GraphQLString, description: 'See http://numeraljs.com/#format' }
+                                            },
                                             description: attr.description,
                                             type: nullableIf(
                                                 GraphQLNonNull,
@@ -316,27 +304,5 @@ export default function(nameFn = defaultName)
             },
             ['PgColumns']
         );
-
-
-        return builder.hook(
-            'GraphQLObjectType:fields:field:args',
-            (args, build, context) =>
-            {
-                if (context.field.type.toString() !== 'Numeral' && context.field.type.toString() !== 'Numeral!')
-                    return args;
-
-                if(args['format'] !== undefined)
-                    return args;
-
-                return build.extend(
-                    args,
-                    {
-                        format: { type: build.graphql.GraphQLString }
-                    },
-                    'Adding `format` argument'
-                );
-            }
-        );
-
     }
 }
