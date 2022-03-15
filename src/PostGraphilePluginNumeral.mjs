@@ -65,6 +65,7 @@ export default function(nameFn = defaultName)
         );
 
 
+        // Computed fields that return int datatype
         builder.hook(
             'GraphQLObjectType:fields',
             (fields, build, context) => {
@@ -196,6 +197,7 @@ export default function(nameFn = defaultName)
 
 
         builder.hook(
+        // Normal fields that return int datatype
             "GraphQLObjectType:fields",
             (fields, build, context) =>
             {
